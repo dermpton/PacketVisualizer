@@ -15,9 +15,13 @@ Potential tracks:-
 - Network Visualization
 - Packet Capture and Analysis
 """
+
 import dpkt
 import socket
 import pygeoip
+from tkinter import Tk
+from os import getcwd
+from tkinter.filedialog import askopenfilename, asksaveasfile, Directory
 
 
 gi = pygeoip.GeoIP('GeoLiteCity.dat') # GeoIP database object
@@ -52,7 +56,6 @@ def retKML(dstip, srcip):
         return ''
 
 
-
 def plotIPs(pcap):
     kmlPts = ''
     for(ts, buf) in pcap:
@@ -69,11 +72,66 @@ def plotIPs(pcap):
 
 
 def main():
-    f = open('wire.pcap','rb')  # opens the file that contains the specified packets from Wireshark and reads as binaries
-    # hence we have the mode set to 'rb' - read file and binary stream
-    pcap = dpkt.pcap.Reader(f)  # reads the open file from binary mode -> pcap
+    try:
+        pcapfilepath = askopenfilename(title="Select your .pcap from Wireshark")
+        wireSharkFile = open(f'{pcapfilepath}','rb')
+        #FRAGILE
+        pcap = dpkt.pcap.Reader(wireSharkFile)  # reads the open file from binary mode -> pcap
+        kmlheader = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n' \
+                    '<name>Packet Visualization</name>\n' \
+                    '<Style id="transBluePoly">' \
+                    '<LineStyle>' \
+                    '<width>1.5</width>' \
+                    '<color>880808</color>' \
+                    '</LineStyle>' \
+                    '</Style>'
+        # 880808 501400E6
+        kmlfooter = '</Document>\n</kml>\n'
 
-    kmlheader = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n'\
+        kmlTarget = asksaveasfile(mode='w', title='Save File',
+                                  initialdir=f'{getcwd()}', defaultextension='.kml',
+                                  confirmoverwrite=True, filetypes=[("KML Files","*.kml")], initialfile='output_data.kml')
+        kmlTarget.write(kmlheader + plotIPs(pcap) + kmlfooter)
+
+        redirect = """
+            Packet Generation: Succeeded! view 'output_data.kml'
+            View 'output_data.kml' in Current Working Directory or
+            in your preferred directory you saved it in.
+            
+            *Support limited to Desktop & Laptop Users*
+
+            Head over to https://www.google.com/mymaps
+            Perform the following:
+            1. Sign-in/Login to your Google Account (Create one otherwise)
+            2. Click the "Create A New Map Button"
+            3. Click "Create" once again
+            4. An untitled map should appear in your browser (Refresh otherwise)
+            5. On the top left corner is a dashboard. Find the Untitled Layer and
+               click Import
+            6. Browse the repository or drag the file with the .kml extension i.e.,
+               output_data.kml
+            7. Your packet distribution across the globe should appear in 
+               extruded lines from a rough estimate of your IP or your Service
+               providers IP.
+            OPTIONAL
+            8. On the dash click the horizontal ellipse (...) above the cloud
+               icon and navigate to view in Google Earth
+        """
+        print(redirect)
+
+    except PermissionError:
+        print("Access Denied. Perhaps put it on a more accessible file path?")
+
+    except AttributeError:
+        print("Premature exit from File Dialog")
+
+
+    except FileNotFoundError:
+        print("Initial attempt - Denied. Opening pre-loaded pcap file.")
+        wireSharkFile = open('wire.pcap','rb')  # opens the file that contains the specified packets from Wireshark and reads as binaries
+        # hence we have the mode set to 'rb' - read file and binary stream
+        pcap = dpkt.pcap.Reader(wireSharkFile)  # reads the open file from binary mode -> pcap
+        kmlheader = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n'\
     '<name>Packet Visualization</name>\n'\
     '<Style id="transBluePoly">'\
     '<LineStyle>'\
@@ -81,10 +139,51 @@ def main():
     '<color>880808</color>'\
     '</LineStyle>'\
     '</Style>'
-    # 880808 501400E6
-    kmlfooter = '</Document>\n</kml>\n'
+        # 880808 501400E6
+        kmlfooter = '</Document>\n</kml>\n'
+
+        kmlTarget = asksaveasfile(mode='w', title='Save File',
+                                  initialdir=f'{getcwd()}', defaultextension='.kml',
+                                  confirmoverwrite=True, filetypes=[("KML Files", "*.kml")],
+                                  initialfile='output_data.kml')
+        kmlTarget.write(kmlheader + plotIPs(pcap) + kmlfooter)
+
+        redirect = """
+        Packet Generation: Succeeded! 
+        View 'output_data.kml' in Current Working Directory or
+        in your preferred directory you saved it in.
+
+        *Support limited to Desktop & Laptop Users*
+
+        Head over to https://www.google.com/mymaps
+        Perform the following:
+        1. Sign-in/Login to your Google Account (Create one otherwise)
+        2. Click the "Create A New Map Button"
+        3. Click "Create" once again
+        4. An untitled map should appear in your browser (Refresh otherwise)
+        5. On the top left corner is a dashboard. Find the Untitled Layer and
+           click Import
+        6. Browse the repository or drag the file with the .kml extension i.e.,
+           output_data.kml
+        7. Your packet distribution across the globe should appear in 
+           extruded lines from a rough estimate of your IP or your Service
+           providers IP.
+        OPTIONAL
+        8. On the dash click the horizontal ellipse (...) above the cloud
+           icon and navigate to view in Google Earth
+    """
+        print(redirect)
+
+
+"""
     kmlTarget = open("output_data.kml", "w")
+
     kmlTarget.write( kmlheader + plotIPs(pcap) + kmlfooter)
+"""
+
+"""
+
+"""
 
 #    print( kmlheader + plotIPs(pcap) + kmlfooter)
 
@@ -354,5 +453,4 @@ if __name__ == '__main__':
         network services.
         
     """
-
 

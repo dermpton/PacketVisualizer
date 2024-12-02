@@ -3,4 +3,9 @@
 /input_data.pcap
 /output_data.kml
 /wire.pcap
-.idea
+.ScapyTutorial/
+.__pycache__/
+/gui.py
+.idea/
+/__pycache__/main.cpython-312.pyc
+ScapyTutorial/main.py
