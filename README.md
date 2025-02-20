@@ -16,7 +16,7 @@ packets:
 ## Usage
 
 - Ensure both Wireshark & Python are installed.
-- Open your favorite and clone this repository: https://github.com/dermpton/PacketVisualizer.git
+- Open your favorite IDE and clone this repository: https://github.com/dermpton/PacketVisualizer.git
 - Run Wireshark, select any interface of choice
 - You should be redirected to a separate view your packets being anaylzed for the selected interface
 - navigate to the following path: press stop then File > Export Specified Packets
